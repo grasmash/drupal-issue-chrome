@@ -1,0 +1,62 @@
+.drupalorg-issue-message {
+    display: inline-block;
+}
+.drupalorg-issue-message.loading {
+    background-color: #89b3cd;
+}
+.drupalorg-issue-message.error {
+    color: #cd0316;
+}
+
+.drupalorg-issue {
+    display: inline-block;
+    background-color: #cdcdcd;
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+.issue-status-1 {
+    background-color: #fff;
+    /*background-color: #e1e7eb;*/
+}
+
+.issue-status-2  {
+    background-color: #c0ffc0;
+    /*background-color: #cec;*/
+}
+
+.issue-status-3,
+.issue-status-4,
+.issue-status-5,
+.issue-status-6 {
+    background-color: #ddf;
+    /*background-color: #cce;*/
+}
+
+.issue-status-7 {
+    background-color: #ffc9c9;
+    /*background-color: #eeb9b9;*/
+}
+
+.issue-status-8 {
+    background-color: #ffd;
+    /*background-color: #eed;*/
+}
+
+.issue-status-13 {
+    background-color: #ffe7dd;
+    /*background-color: #eed7cc;*/
+}
+
+.issue-status-14  {
+    background-color: #e7ffdd;
+    /*background-color: #d7eecc;*/
+}
+
+.issue-status-2,
+.issue-status-3,
+.issue-status-5,
+.issue-status-6,
+.issue-status-7 {
+    text-decoration: line-through;
+}
