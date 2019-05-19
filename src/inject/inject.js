@@ -59,6 +59,7 @@ chrome.extension.sendMessage({}, function(response) {
             // Extract issue id from href.
             var href = el.getAttribute('href');
             var matches = Array.from( href.matchAll(regex) );
+            // @todo Add error handling here in case index 2 does not exist.
             var issue_id = matches[0][2];
 
             // @todo Add some time-based caching.
