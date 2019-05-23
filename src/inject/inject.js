@@ -52,15 +52,18 @@ chrome.extension.sendMessage({}, function(response) {
          * @param el
          */
         function processAnchorElement(el) {
-            // Prepend link text with [Loading...].
-            var original_innerHTML = el.innerHTML;
-            el.innerHTML = '<span class="drupalorg-issue-message loading">[Loading...]</span> ' + el.innerHTML;
-
             // Extract issue id from href.
             var href = el.getAttribute('href');
             var matches = Array.from( href.matchAll(regex) );
-            // @todo Add error handling here in case index 2 does not exist.
+            // Bail out if we can't find the issue id.
+            if (matches[0] === undefined || matches[0][2] === undefined) {
+                return;
+            }
             var issue_id = matches[0][2];
+
+            // Prepend link text with [Loading...].
+            var original_innerHTML = el.innerHTML;
+            el.innerHTML = '<span class="drupalorg-issue-message loading">[Loading...]</span> ' + el.innerHTML;
 
             // @todo Add some time-based caching.
             const Http = new XMLHttpRequest();
