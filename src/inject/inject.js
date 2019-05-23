@@ -5,11 +5,6 @@ chrome.extension.sendMessage({}, function(response) {
 
             // Get all anchors on the page linking to Drupal.org.
             var els = document.querySelectorAll("a[href^='https://www.drupal.org/']");
-
-            // Pattern matches:
-            // https://www.drupal.org/project/drupal/issues/2982684
-            // https://www.drupal.org/project/composer_initiative/issues/3053800
-            var regex = 'https:\\/\\/www\\.drupal\\.org\\/([^0-9]+)([0-9]+)';
             for (var i = 0, l = els.length; i < l; i++) {
                 var el = els[i];
                 // Only replace if text content matches href. We don't want to
@@ -47,11 +42,16 @@ chrome.extension.sendMessage({}, function(response) {
         }
 
         /**
-         * Process an anchor element by rendering or displaying error.
+         * Process an anchor element if it refers to a Drupal.org issue.
          *
          * @param el
          */
         function processAnchorElement(el) {
+            // Pattern matches:
+            // https://www.drupal.org/project/drupal/issues/2982684
+            // https://www.drupal.org/project/composer_initiative/issues/3053800
+            var regex = 'https:\\/\\/www\\.drupal\\.org\\/([^0-9]+)([0-9]+)';
+
             // Extract issue id from href.
             var href = el.getAttribute('href');
             var matches = Array.from( href.matchAll(regex) );
@@ -60,7 +60,16 @@ chrome.extension.sendMessage({}, function(response) {
                 return;
             }
             var issue_id = matches[0][2];
+            doProcessAnchorElement(el, issue_id);
+        }
 
+        /**
+         * Process an issue link by rendering issue data or displaying error.
+         *
+         * @param el
+         * @param issue_id
+         */
+        function doProcessAnchorElement(el, issue_id) {
             // Prepend link text with [Loading...].
             var original_innerHTML = el.innerHTML;
             el.innerHTML = '<span class="drupalorg-issue-message loading">[Loading...]</span> ' + el.innerHTML;
@@ -82,13 +91,11 @@ chrome.extension.sendMessage({}, function(response) {
                         }
                         // Drupal.org returns a 200 even if the node doesn't exist.
                         else {
-                            // Prepend error to element text.
-                            el.innerHTML = '<span class="drupalorg-issue-message error">[Invalid NID]</span> ' + original_innerHTML;
+                            renderAnchorElementInvalidIssue(el, original_innerHTML);
                         }
                     }
                     else {
-                        // Prepend error status to element text.
-                        el.innerHTML = '<span class="drupalorg-issue-message error">[' + status + ']</span> ' + original_innerHTML;
+                        renderAnchorElementHttpError(el, original_innerHTML, status);
                     }
                 }
             }
@@ -106,6 +113,29 @@ chrome.extension.sendMessage({}, function(response) {
             var issue_status_text = getIssueStatusText(node.field_issue_status);
             el.innerHTML = '<span class="drupalorg-issue issue-status-' + node.field_issue_status + '">#' + node.nid + ': ' + node.title + '</span>';
             el.setAttribute('title', issue_status_text)
+        }
+
+        /**
+         * Renders an anchor element after a HTTP fetch error.
+         *
+         * @param el
+         * @param original_innerHTML
+         * @param status
+         */
+        function renderAnchorElementHttpError(el, original_innerHTML, status) {
+            // Prepend error status to element text.
+            el.innerHTML = '<span class="drupalorg-issue-message error">[' + status + ']</span> ' + original_innerHTML;
+        }
+
+        /**
+         * Renders an anchor element for in invalid node id.
+         *
+         * @param el
+         * @param original_innerHTML
+         */
+        function renderAnchorElementInvalidIssue(el, original_innerHTML) {
+            // Prepend error to element text.
+            el.innerHTML = '<span class="drupalorg-issue-message error">[Invalid NID]</span> ' + original_innerHTML;
         }
     }, 10);
 });
