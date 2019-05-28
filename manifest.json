@@ -1,6 +1,6 @@
 {
   "name": "Drupal Issue Chrome",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "manifest_version": 2,
   "description": "Renders links to Drupal.org issues based on issue status.",
   "homepage_url": "https://github.com/grasmash/drupal-issue-chrome",

@@ -86,12 +86,13 @@ chrome.extension.sendMessage({}, function(response) {
                     var status = Http.status;
                     if (status === 200) {
                         var node = Http.response.list[0];
-                        if (node !== undefined) {
-                            renderAnchorElement(el, node);
-                        }
                         // Drupal.org returns a 200 even if the node doesn't exist.
+                        if (node === undefined || node.type !== 'project_issue') {
+                            // Restore original markup. Removes "loading" prefix.
+                            el.innerHTML = original_innerHTML;
+                        }
                         else {
-                            renderAnchorElementInvalidIssue(el, original_innerHTML);
+                            renderAnchorElement(el, node);
                         }
                     }
                     else {
@@ -127,15 +128,5 @@ chrome.extension.sendMessage({}, function(response) {
             el.innerHTML = '<span class="drupalorg-issue-message error">[' + status + ']</span> ' + original_innerHTML;
         }
 
-        /**
-         * Renders an anchor element for in invalid node id.
-         *
-         * @param el
-         * @param original_innerHTML
-         */
-        function renderAnchorElementInvalidIssue(el, original_innerHTML) {
-            // Prepend error to element text.
-            el.innerHTML = '<span class="drupalorg-issue-message error">[Invalid NID]</span> ' + original_innerHTML;
-        }
     }, 10);
 });
