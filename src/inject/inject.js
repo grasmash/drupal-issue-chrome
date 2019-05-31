@@ -66,11 +66,12 @@ chrome.extension.sendMessage({}, function(response) {
          * @param issue_id
          */
         function doProcessAnchorElement(el, issue_id) {
-            // Prepend link text with [Loading...].
             var original_innerHTML = el.innerHTML;
+            // Prepend link text with [Loading...].
             el.innerHTML = '<span class="drupalorg-issue-message loading">[Loading...]</span> ' + el.innerHTML;
-            var cache_key = "node_" + issue_id;
 
+            // Load node info from a local cache if possible.
+            var cache_key = "node_" + issue_id;
             chrome.storage.local.get([cache_key], function(items) {
                 if (items.hasOwnProperty(cache_key) && items[cache_key].hasOwnProperty('cacheTime')) {
                     // 5 minute cache.
@@ -86,6 +87,7 @@ chrome.extension.sendMessage({}, function(response) {
         }
 
         /**
+         * Fetches issue info live from Drupal.org and then renders the anchor.
          *
          * @param el
          * @param original_innerHTML
@@ -109,6 +111,7 @@ chrome.extension.sendMessage({}, function(response) {
                             node: node,
                             cacheTime: Date.now()
                         };
+                        // Set the cache entry and then render the anchor.
                         chrome.storage.local.set(cache_data, function() {
                             renderAnchorElement(el, original_innerHTML, node);
                         });
@@ -137,6 +140,7 @@ chrome.extension.sendMessage({}, function(response) {
                 return false;
             }
 
+            // Load extension options to determine render style.
             chrome.storage.sync.get({
                 render_drupal_org: false,
                 render_style: 'long'
