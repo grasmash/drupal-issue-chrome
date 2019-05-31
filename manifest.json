@@ -10,19 +10,22 @@
     "128": "icons/icon128.png"
   },
   "default_locale": "en",
-  "permissions": ["activeTab"],
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": false
+  },
   "content_scripts": [
     {
       "matches": [
         "*://*/*"
       ],
+      "exclude_matches": ["*://*.drupal.org/*"],
       "css": [
         "src/inject/inject.css"
-      ]
-    },
-    {
-      "matches": [
-        "*://*/*"
       ],
       "js": [
         "src/inject/inject.js"

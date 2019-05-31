@@ -3,15 +3,13 @@ chrome.extension.sendMessage({}, function(response) {
         if (document.readyState === "complete") {
             clearInterval(readyStateCheckInterval);
 
+            // @todo If !render_drupal_org && we're on Drupal.org, don't render.
+
             // Get all anchors on the page linking to Drupal.org.
             var els = document.querySelectorAll("a[href^='https://www.drupal.org/']");
             for (var i = 0, l = els.length; i < l; i++) {
                 var el = els[i];
-                // Only replace if text content matches href. We don't want to
-                // destroy links with custom text content.
-                if (el.getAttribute('href') === el.innerHTML) {
-                    processAnchorElement(el);
-                }
+                processAnchorElement(el);
             }
         }
 
@@ -92,7 +90,7 @@ chrome.extension.sendMessage({}, function(response) {
                             el.innerHTML = original_innerHTML;
                         }
                         else {
-                            renderAnchorElement(el, node);
+                            renderAnchorElement(el, original_innerHTML, node);
                         }
                     }
                     else {
@@ -106,14 +104,39 @@ chrome.extension.sendMessage({}, function(response) {
          * Renders an anchor element using node info.
          *
          * @param el
+         * @param original_innerHTML
          * @param node
          *
          * @todo Make format configurable via tokens in an options page.
          */
-        function renderAnchorElement(el, node) {
-            var issue_status_text = getIssueStatusText(node.field_issue_status);
-            el.innerHTML = '<span class="drupalorg-issue issue-status-' + node.field_issue_status + '">#' + node.nid + ': ' + node.title + '</span>';
-            el.setAttribute('title', issue_status_text)
+        function renderAnchorElement(el, original_innerHTML, node) {
+            chrome.storage.sync.get({
+                render_drupal_org: false,
+                render_style: 'long'
+            }, function(items) {
+                var issue_status_text = getIssueStatusText(node.field_issue_status);
+                var prefix = '<span class="drupalorg-issue issue-status-' + node.field_issue_status + '">';
+                var suffix = '</span>';
+
+                var content;
+                // Only replace contents if anchor contents equals href. This
+                // prevents destroying custom text.
+                if (el.getAttribute('href') === original_innerHTML) {
+                    if (items.render_style === 'long') {
+                        content = '#' + node.nid + ': ' + node.title;
+                    }
+                    else {
+                        content = '#' + node.nid;
+                    }
+                }
+                // Otherwise, use original text content.
+                else {
+                    content = original_innerHTML;
+                }
+                el.innerHTML =  prefix + content + suffix;
+                el.setAttribute('title', issue_status_text)
+            });
+
         }
 
         /**

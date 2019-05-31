@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head><title>Drupal Issue Chrome Options</title></head>
+<body>
+
+<div>
+Which Drupal.org links should be rendered?
+<select id="render_targets">
+    <option value="all">Render all issue links to Drupal.org.</option>
+    <option value="identical">render only links where the href attribute is identical to the anchor content.</option>
+</select>
+</div>
+
+<div>
+<label>
+    <input type="checkbox" id="rewrite_link_contents" />
+    Rewrite text content.
+</label>
+If not, only style link. Don't replace text.
+</div>
+
+<div>
+<label>
+    <input type="checkbox" id="render_drupal_org" />
+    Render links on Drupal.org
+</label>
+</div>
+
+<div>
+Define format for links. Default is #[node.nid]: [node.title].
+<input type="text" id="render_pattern" value="#[node.nid]: [node.title]" />
+</div>
+
+<div id="status"></div>
+<button id="save">Save</button>
+
+<script src="options.js"></script>
+</body>
+</html>
