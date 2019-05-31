@@ -3,8 +3,6 @@ chrome.extension.sendMessage({}, function(response) {
         if (document.readyState === "complete") {
             clearInterval(readyStateCheckInterval);
 
-            // @todo If !render_drupal_org && we're on Drupal.org, don't render.
-
             // Get all anchors on the page linking to Drupal.org.
             var els = document.querySelectorAll("a[href^='https://www.drupal.org/']");
             for (var i = 0, l = els.length; i < l; i++) {
@@ -71,8 +69,29 @@ chrome.extension.sendMessage({}, function(response) {
             // Prepend link text with [Loading...].
             var original_innerHTML = el.innerHTML;
             el.innerHTML = '<span class="drupalorg-issue-message loading">[Loading...]</span> ' + el.innerHTML;
+            var cache_key = "node_" + issue_id;
 
-            // @todo Add some time-based caching.
+            chrome.storage.local.get([cache_key], function(items) {
+                if (items.hasOwnProperty(cache_key) && items[cache_key].hasOwnProperty('cacheTime')) {
+                    // 5 minute cache.
+                    if (items[cache_key].cacheTime > Date.now() - 1000 * 60 * 5) {
+                        var node = items[cache_key].node;
+                        return renderAnchorElement(el, original_innerHTML, node);
+                    }
+                }
+
+                fetchLiveAndRenderAnchorElement(el, original_innerHTML, issue_id);
+            });
+
+        }
+
+        /**
+         *
+         * @param el
+         * @param original_innerHTML
+         * @param issue_id
+         */
+        function fetchLiveAndRenderAnchorElement(el, original_innerHTML, issue_id) {
             const Http = new XMLHttpRequest();
             const url='https://www.drupal.org/api-d7/node.json?nid=' + issue_id;
             Http.responseType = 'json';
@@ -84,14 +103,15 @@ chrome.extension.sendMessage({}, function(response) {
                     var status = Http.status;
                     if (status === 200) {
                         var node = Http.response.list[0];
-                        // Drupal.org returns a 200 even if the node doesn't exist.
-                        if (node === undefined || node.type !== 'project_issue') {
-                            // Restore original markup. Removes "loading" prefix.
-                            el.innerHTML = original_innerHTML;
-                        }
-                        else {
+                        var cache_key = "node_" + issue_id;
+                        var cache_data = {};
+                        cache_data[cache_key] = {
+                            node: node,
+                            cacheTime: Date.now()
+                        };
+                        chrome.storage.local.set(cache_data, function() {
                             renderAnchorElement(el, original_innerHTML, node);
-                        }
+                        });
                     }
                     else {
                         renderAnchorElementHttpError(el, original_innerHTML, status);
@@ -110,6 +130,13 @@ chrome.extension.sendMessage({}, function(response) {
          * @todo Make format configurable via tokens in an options page.
          */
         function renderAnchorElement(el, original_innerHTML, node) {
+            // Drupal.org returns a 200 even if the node doesn't exist.
+            if (node === undefined || node.type !== 'project_issue') {
+                // Restore original markup. Removes "loading" prefix.
+                el.innerHTML = original_innerHTML;
+                return false;
+            }
+
             chrome.storage.sync.get({
                 render_drupal_org: false,
                 render_style: 'long'
