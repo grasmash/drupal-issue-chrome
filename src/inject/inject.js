@@ -67,9 +67,6 @@ chrome.extension.sendMessage({}, function(response) {
          */
         function doProcessAnchorElement(el, issue_id) {
             var original_innerHTML = el.innerHTML;
-            // Prepend link text with [Loading...].
-            el.innerHTML = '<span class="drupalorg-issue-message loading">[Loading...]</span> ' + el.innerHTML;
-
             // Load node info from a local cache if possible.
             var cache_key = "node_" + issue_id;
             chrome.storage.local.get([cache_key], function(items) {
@@ -94,6 +91,9 @@ chrome.extension.sendMessage({}, function(response) {
          * @param issue_id
          */
         function fetchLiveAndRenderAnchorElement(el, original_innerHTML, issue_id) {
+            // Prepend link text with [Loading...].
+            el.innerHTML = '<span class="drupalorg-issue-message loading">[Loading...]</span> ' + el.innerHTML;
+
             const Http = new XMLHttpRequest();
             const url='https://www.drupal.org/api-d7/node.json?nid=' + issue_id;
             Http.responseType = 'json';
@@ -145,27 +145,38 @@ chrome.extension.sendMessage({}, function(response) {
                 render_drupal_org: false,
                 render_style: 'long'
             }, function(items) {
-                var issue_status_text = getIssueStatusText(node.field_issue_status);
                 var prefix = '<span class="drupalorg-issue issue-status-' + node.field_issue_status + '">';
                 var suffix = '</span>';
+                var issue_status_text = getIssueStatusText(node.field_issue_status);
 
                 var content;
+                var title;
                 // Only replace contents if anchor contents equals href. This
                 // prevents destroying custom text.
-                if (el.getAttribute('href') === original_innerHTML) {
+                // Normalize the text by removing prefixes and making lowercase.
+                var anchor_content = original_innerHTML.replace("https://www.", "").toLowerCase();
+                var anchor_href = el.getAttribute('href').replace("https://www.", "").toLowerCase();
+                if (anchor_href === anchor_content) {
                     if (items.render_style === 'long') {
                         content = '#' + node.nid + ': ' + node.title;
+                        title = issue_status_text;
+                    }
+                    else if (items.render_style === 'very_long') {
+                        content = '#' + node.nid + ': ' + issue_status_text + " | " + node.title;
+                        title = issue_status_text;
                     }
                     else {
                         content = '#' + node.nid;
+                        title = issue_status_text + " | " + node.title;
                     }
                 }
                 // Otherwise, use original text content.
                 else {
                     content = original_innerHTML;
+                    title = issue_status_text;
                 }
                 el.innerHTML =  prefix + content + suffix;
-                el.setAttribute('title', issue_status_text)
+                el.setAttribute('title', title)
             });
 
         }
