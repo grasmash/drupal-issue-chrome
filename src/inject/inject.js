@@ -46,7 +46,9 @@ chrome.extension.sendMessage({}, function(response) {
             // Pattern matches:
             // https://www.drupal.org/project/drupal/issues/2982684
             // https://www.drupal.org/project/composer_initiative/issues/3053800
-            var regex = 'https:\\/\\/www\\.drupal\\.org\\/([^0-9]+)([0-9]+)';
+            // Should not match:
+            // https://www.drupal.org/docs/8/modules/workspace
+            var regex = 'https:\\/\\/www\\.drupal\\.org\\/project/\([^0-9]+)([0-9]+)';
 
             // Extract issue id from href.
             var href = el.getAttribute('href');
