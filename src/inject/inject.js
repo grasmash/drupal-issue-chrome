@@ -43,12 +43,14 @@ chrome.extension.sendMessage({}, function(response) {
          * @param el
          */
         function processAnchorElement(el) {
-            // Pattern matches:
+            // Pattern should match:
             // https://www.drupal.org/project/drupal/issues/2982684
             // https://www.drupal.org/project/composer_initiative/issues/3053800
-            // Should not match:
+            // Pattern should not match:
             // https://www.drupal.org/docs/8/modules/workspace
-            var regex = 'https:\\/\\/www\\.drupal\\.org\\/project/\([^0-9]+)([0-9]+)';
+            // https://www.drupal.org/project/entity_embed
+            // https://www.drupal.org/project/ctools/releases/8.x-3.2
+            var regex = 'https:\\/\\/www\\.drupal\\.org\\/project/\([^0-9]+)\/issues\/([0-9]+)';
 
             // Extract issue id from href.
             var href = el.getAttribute('href');
@@ -136,6 +138,7 @@ chrome.extension.sendMessage({}, function(response) {
          */
         function renderAnchorElement(el, original_innerHTML, node) {
             // Drupal.org returns a 200 even if the node doesn't exist.
+            // Validate that we have a node and that it's the correct type.
             if (node === undefined || node.type !== 'project_issue') {
                 // Restore original markup. Removes "loading" prefix.
                 el.innerHTML = original_innerHTML;
