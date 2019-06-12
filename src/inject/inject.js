@@ -50,7 +50,7 @@ chrome.extension.sendMessage({}, function(response) {
             // https://www.drupal.org/docs/8/modules/workspace
             // https://www.drupal.org/project/entity_embed
             // https://www.drupal.org/project/ctools/releases/8.x-3.2
-            var regex = 'https:\\/\\/www\\.drupal\\.org\\/project/\([^0-9]+)\/issues\/([0-9]+)';
+            var regex = 'https:\/\/www\.drupal\.org\/project\/([^0-9]+)\/issues\/([0-9]+)';
 
             // Extract issue id from href.
             var href = el.getAttribute('href');
