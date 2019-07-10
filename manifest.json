@@ -3,7 +3,7 @@
   "version": "0.0.5",
   "manifest_version": 2,
   "description": "Renders links to Drupal.org issues based on issue status.",
-  "homepage_url": "https://github.com/grasmash/drupal-issue-chrome",
+  "homepage_url": "https://github.com/grasmash/drupal-issue-chrome/blob/master/README.md#readme",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
