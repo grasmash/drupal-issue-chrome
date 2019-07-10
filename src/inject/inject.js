@@ -210,6 +210,9 @@ chrome.runtime.sendMessage({}, function(response) {
                 var anchor_content = original_innerHTML.replace("https://www.", "").toLowerCase();
                 var anchor_href = el.getAttribute('href').replace("https://www.", "").toLowerCase();
                 if (anchor_href === anchor_content) {
+                    // To get project name, we'd need to fetch node.field_project.uri.
+                    // project_id = node.field_project.id
+                    // project_uri = node.field_project.uri (e.g., https://www.drupal.org/api-d7/node/3020054)
                     if (items.render_style === 'long') {
                         content = '#' + node.nid + ': ' + node.title;
                         title = issue_status_text;
