@@ -1,13 +1,56 @@
-chrome.extension.sendMessage({}, function(response) {
+chrome.runtime.sendMessage({}, function(response) {
     var readyStateCheckInterval = setInterval(function() {
         if (document.readyState === "complete") {
             clearInterval(readyStateCheckInterval);
+            processAllShortCodes();
+            processAllDrupalOrgIssueLinks();
+        }
 
+        /**
+         *
+         */
+        function processAllDrupalOrgIssueLinks() {
             // Get all anchors on the page linking to Drupal.org.
             var els = document.querySelectorAll("a[href^='https://www.drupal.org/']");
             for (var i = 0, l = els.length; i < l; i++) {
                 var el = els[i];
                 processAnchorElement(el);
+            }
+        }
+
+        /**
+         *
+         */
+        function processAllShortCodes() {
+            var els = document.querySelectorAll("p, ul, ol, table");
+            for (var i = 0, l = els.length; i < l; i++) {
+                var el = els[i];
+                processShortCode(el);
+            }
+        }
+
+        /**
+         *
+         * @param el
+         * @returns {boolean}
+         */
+        function processShortCode(el) {
+            if (el.classList.contains('processed')) {
+                return false;
+            }
+            var text = el.innerHTML;
+            var new_text = text.replace(/d.o#([0-9]+)/g, function (match, p1) {
+                var issue_id = p1;
+                var a = document.createElement('a');
+                var href = "https://www.drupal.org/node/" + issue_id;
+                var linkText = document.createTextNode(href);
+                a.appendChild(linkText);
+                a.title = href;
+                a.href = href;
+                return a.outerHTML;
+            });
+            if (new_text !== text) {
+                el.innerHTML = new_text;
             }
         }
 
@@ -43,23 +86,28 @@ chrome.extension.sendMessage({}, function(response) {
          * @param el
          */
         function processAnchorElement(el) {
+            if (el.classList.contains('processed')) {
+                return false;
+            }
+
             // Pattern should match:
             // https://www.drupal.org/project/drupal/issues/2982684
             // https://www.drupal.org/project/composer_initiative/issues/3053800
+            // https://www.drupal.org/node/2982684
             // Pattern should not match:
             // https://www.drupal.org/docs/8/modules/workspace
             // https://www.drupal.org/project/entity_embed
             // https://www.drupal.org/project/ctools/releases/8.x-3.2
-            var regex = 'https:\/\/www\.drupal\.org\/project\/([^0-9]+)\/issues\/([0-9]+)';
+            var regex = 'https:\/\/www\.drupal\.org\/(project\/([^0-9]+)\/issues|node)\/([0-9]+)';
 
             // Extract issue id from href.
             var href = el.getAttribute('href');
             var matches = Array.from( href.matchAll(regex) );
             // Bail out if we can't find the issue id.
-            if (matches[0] === undefined || matches[0][2] === undefined) {
+            if (matches[0] === undefined || matches[0][3] === undefined) {
                 return;
             }
-            var issue_id = matches[0][2];
+            var issue_id = matches[0][3];
             doProcessAnchorElement(el, issue_id);
         }
 
@@ -82,7 +130,7 @@ chrome.extension.sendMessage({}, function(response) {
                     }
                 }
 
-                fetchLiveAndRenderAnchorElement(el, original_innerHTML, issue_id);
+                return fetchLiveAndRenderAnchorElement(el, original_innerHTML, issue_id);
             });
 
         }
@@ -182,6 +230,7 @@ chrome.extension.sendMessage({}, function(response) {
                 }
                 el.innerHTML =  prefix + content + suffix;
                 el.setAttribute('title', title)
+                el.classList.add("processed");
             });
 
         }
@@ -196,6 +245,7 @@ chrome.extension.sendMessage({}, function(response) {
         function renderAnchorElementHttpError(el, original_innerHTML, status) {
             // Prepend error status to element text.
             el.innerHTML = '<span class="drupalorg-issue-message error">[' + status + ']</span> ' + original_innerHTML;
+            el.classList.add("processed");
         }
 
     }, 10);
