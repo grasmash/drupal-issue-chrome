@@ -1,12 +1,12 @@
 var readyStateCheckInterval = setInterval(function() {
     if (document.readyState === "complete") {
         clearInterval(readyStateCheckInterval);
-        processAllShortCodes();
+        // processAllShortCodes();
         processAllDrupalOrgIssueLinks();
     }
 
     /**
-     *
+     * Process anchors linking to Drupal.org.
      */
     function processAllDrupalOrgIssueLinks() {
         // Get all anchors on the page linking to Drupal.org.
@@ -18,7 +18,7 @@ var readyStateCheckInterval = setInterval(function() {
     }
 
     /**
-     *
+     * Process any text strings like d.o#12345.
      */
     function processAllShortCodes() {
         var els = document.querySelectorAll("p, ul, ol, table");
@@ -29,6 +29,7 @@ var readyStateCheckInterval = setInterval(function() {
     }
 
     /**
+     * Process any text string like d.o#12345.
      *
      * @param el
      * @returns {boolean}
